@@ -9,12 +9,18 @@ const dataPath = './data/data.json';
 if (!fs.existsSync(dataPath)) {
     fs.writeFileSync(dataPath, '[]', 'utf-8');
 }
-
+// get all
 const loadContact = () => {
     const dataBuffer = fs.readFileSync('data/data.json', 'utf-8');
     const dataJSON = JSON.parse(dataBuffer)
     return dataJSON;
 }
 
+// cari contact berdasarkan nama
+const findContact = (nama) => {
+    const dataJSON = loadContact();
+    const contact = dataJSON.find(contact => contact.nama === nama);
+    return contact;
+}
 
-module.exports = { loadContact }
+module.exports = { loadContact, findContact }
