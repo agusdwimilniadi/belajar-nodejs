@@ -41,4 +41,23 @@ const cekDuplikat = (nama) => {
     return contact;
 }
 
-module.exports = { loadContact, findContact, addContact, cekDuplikat }
+
+// Hapus contact
+const deleteContact = (nama) => {
+    const dataJSON = loadContact();
+    const filteredContact = dataJSON.filter(contact => contact.nama !== nama);
+    saveContact(filteredContact);
+}
+
+
+// UPDATE CONTACT
+const updateContacts = (contactBaru) => {
+    const dataJSON = loadContact();
+    const filteredContact = dataJSON.filter(contact => contact.nama !== contactBaru.oldNama);
+    delete contactBaru.oldNama;
+    filteredContact.push(contactBaru);
+    saveContact(filteredContact);
+}
+
+
+module.exports = { loadContact, findContact, addContact, cekDuplikat, deleteContact, updateContacts }

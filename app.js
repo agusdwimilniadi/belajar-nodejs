@@ -1,6 +1,6 @@
 const express = require("express");
 const expresLayout = require("express-ejs-layouts");
-const { loadContact, findContact, addContact, cekDuplikat } = require("./utils/contact");
+const { loadContact, findContact, addContact, cekDuplikat, deleteContact, updateContacts } = require("./utils/contact");
 const { body, validationResult, check } = require("express-validator");
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
@@ -97,6 +97,65 @@ app.get("/contact/add", (req, res) => {
         layout: "layouts/main-layout",
     });
 });
+
+// PROSES DELETE CONTACT
+app.get('/contact/delete/:nama', (req, res) => {
+    const nama = req.params.nama;
+    const contacts = findContact(nama);
+    if (!contacts) {
+        req.flash('msg', 'Data tidak ditemukan')
+        res.redirect('/contact')
+    } else if (contacts) {
+        deleteContact(nama);
+        req.flash('msg', 'Data berhasil dihapus ')
+        res.redirect('/contact');
+    } else {
+        res.redirect('/contact');
+    }
+})
+
+
+// FORM UBAH DATA CONTACT
+app.get("/contact/edit/:nama", (req, res) => {
+    const contact = findContact(req.params.nama)
+    res.render("edit-contact", {
+        layout: "layouts/main-layout",
+        contact,
+    });
+});
+
+// PROSES UBAH DATA
+app.post(
+    "/contact/update",
+    [
+        check("email", "Email tidak valid!").isEmail(),
+        check("noHp", "Nomor HP Tidak valid").isMobilePhone("id-ID"),
+        body("nama").custom((value, { req }) => {
+            const duplikat = cekDuplikat(value);
+            if (value !== req.body.oldNama && duplikat) {
+                throw new Error("Nama sudah ada!");
+            }
+            return true;
+        }),
+    ],
+    (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.render('edit-contact', {
+                layout: "layouts/main-layout",
+                errors: errors.array(),
+                contact: req.body,
+            });
+        } else {
+
+            updateContacts(req.body)
+            req.flash('msg', 'Data berhasil dihbah')
+            res.redirect('/contact')
+        }
+
+
+    }
+);
 
 app.get("/contact/:nama", (req, res) => {
     const contact = findContact(req.params.nama);
